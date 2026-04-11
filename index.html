@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LogForEarth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --green-dark:#1a3a1f;
+  --green-mid:#2d6a4f;
+  --green-accent:#52b788;
+  --green-light:#95d5b2;
+  --cream:#f8f5f0;
+  --text-dark:#1c2b1e;
+  --text-muted:#5a7060;
+}
+
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--text-dark);overflow-x:hidden;}
+
+header{
+  position:relative;
+  height:100vh;
+  min-height:600px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  overflow:hidden;
+  color:white;
+}
+
+.slides-container{
+  position:absolute;
+  inset:0;
+  z-index:0;
+}
+
+.slide{
+  position:absolute;
+  inset:0;
+  background-size:cover;
+  background-position:center;
+  opacity:0;
+  transition:opacity 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+.slide.active{opacity:1;}
+
+.slide-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(10,30,15,0.55) 0%,rgba(10,30,15,0.3) 50%,rgba(10,30,15,0.7) 100%);
+}
+
+.header-content{
+  position:relative;
+  z-index:2;
+  max-width:820px;
+  padding:0 24px;
+}
+
+.eyebrow{
+  display:inline-block;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--green-light);
+  border:1px solid rgba(149,213,178,0.4);
+  padding:6px 16px;
+  border-radius:20px;
+  margin-bottom:24px;
+}
+
+.header-content h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(52px,8vw,96px);
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-2px;
+  margin-bottom:20px;
+}
+
+.header-content h1 span{
+  color:var(--green-light);
+  font-style:italic;
+}
+
+.header-content p{
+  font-size:clamp(16px,2vw,20px);
+  font-weight:300;
+  color:rgba(255,255,255,0.82);
+  max-width:520px;
+  margin:0 auto 36px;
+  line-height:1.7;
+}
+
+.header-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+
+.btn-primary{
+  padding:14px 32px;
+  background:var(--green-accent);
+  color:#fff;
+  border:none;
+  border-radius:40px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+  letter-spacing:.3px;
+}
+.btn-primary:hover{background:#3da676;transform:translateY(-2px);}
+
+.btn-outline{
+  padding:14px 32px;
+  background:transparent;
+  color:#fff;
+  border:1.5px solid rgba(255,255,255,0.45);
+  border-radius:40px;
+  font-size:15px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .25s;
+}
+.btn-outline:hover{border-color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.08);}
+
+.slide-dots{
+  position:absolute;
+  bottom:32px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:3;
+  display:flex;
+  gap:8px;
+}
+.dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,0.35);
+  cursor:pointer;transition:.3s;
+}
+.dot.active{width:22px;border-radius:3px;background:var(--green-light);}
+
+.scroll-hint{
+  position:absolute;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:3;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  color:rgba(255,255,255,0.5);
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.scroll-line{
+  width:1px;height:40px;
+  background:linear-gradient(rgba(255,255,255,0.4),transparent);
+  animation:scrollDown 2s ease-in-out infinite;
+}
+@keyframes scrollDown{0%,100%{transform:scaleY(1);opacity:.5;}50%{transform:scaleY(0.5);opacity:.2;}}
+
+nav{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(26,58,31,0.97);
+  backdrop-filter:blur(12px);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 40px;
+  height:64px;
+  border-bottom:1px solid rgba(82,183,136,0.15);
+}
+
+.nav-logo{
+  font-family:'Playfair Display',serif;
+  font-size:22px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-0.5px;
+}
+.nav-logo span{color:var(--green-light);font-style:italic;}
+
+.nav-links{display:flex;gap:4px;flex-wrap:wrap;}
+
+nav a{
+  color:rgba(255,255,255,0.7);
+  text-decoration:none;
+  font-size:13.5px;
+  font-weight:500;
+  cursor:pointer;
+  padding:8px 14px;
+  border-radius:8px;
+  transition:all .2s;
+  letter-spacing:.2px;
+}
+nav a:hover,nav a.active{background:rgba(82,183,136,0.15);color:#fff;}
+
+.page{display:none;animation:fadeUp .5s ease both;}
+.page.active{display:block;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+.section{padding:96px 40px;max-width:1100px;margin:0 auto;}
+
+.section-label{
+  font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;
+  color:var(--green-accent);margin-bottom:14px;
+}
+
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(34px,4vw,52px);
+  font-weight:700;
+  color:var(--text-dark);
+  line-height:1.15;
+  letter-spacing:-1px;
+  max-width:600px;
+  margin-bottom:18px;
+}
+
+.section-sub{
+  font-size:17px;
+  color:var(--text-muted);
+  max-width:560px;
+  line-height:1.75;
+  margin-bottom:56px;
+}
+
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:32px;
+  border:1px solid rgba(0,0,0,0.06);
+  transition:transform .25s, box-shadow .25s;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.08);}
+
+.card-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:var(--green-accent);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;font-size:22px;
+}
+
+.card h3{font-size:17px;font-weight:600;margin-bottom:10px;color:var(--text-dark);}
+.card p{font-size:14.5px;color:var(--text-muted);line-height:1.7;}
+
+.stat-card{
+  background:var(--green-dark);
+  color:#fff;
+  border-radius:16px;
+  padding:32px 28px;
+  text-align:center;
+}
+.stat-num{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;color:var(--green-light);line-height:1;}
+.stat-label{font-size:13px;color:rgba(255,255,255,0.6);margin-top:8px;letter-spacing:.5px;}
+
+.section-img{
+  width:100%;
+  max-width:680px;
+  border-radius:20px;
+  display:block;
+  margin:0 auto 56px;
+  object-fit:cover;
+  height:340px;
+  background:linear-gradient(135deg,#2d6a4f,#1a3a1f);
+}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+.two-col .section-title,.two-col .section-sub{max-width:100%;}
+
+@media(max-width:760px){
+  nav{padding:0 20px;height:auto;flex-wrap:wrap;padding:12px 20px;gap:8px;}
+  .nav-links{gap:2px;}
+  nav a{font-size:12px;padding:6px 10px;}
+  .two-col{grid-template-columns:1fr;}
+  .section{padding:64px 24px;}
+}
+
+.tag{
+  display:inline-block;
+  background:rgba(82,183,136,0.12);
+  color:var(--green-mid);
+  font-size:12px;font-weight:600;
+  padding:4px 12px;border-radius:20px;
+  margin-bottom:16px;letter-spacing:.5px;
+}
+
+.login-wrap{
+  max-width:480px;
+  margin:96px auto;
+  padding:0 24px;
+}
+
+.login-box{
+  background:#fff;
+  border-radius:24px;
+  padding:48px 44px;
+  border:1px solid rgba(0,0,0,0.07);
+  box-shadow:0 20px 60px rgba(0,0,0,0.06);
+  text-align:center;
+}
+
+.login-box h2{
+  font-family:'Playfair Display',serif;
+  font-size:34px;font-weight:700;
+  color:var(--text-dark);margin-bottom:8px;
+}
+.login-box .sub{font-size:15px;color:var(--text-muted);margin-bottom:36px;}
+
+.field{
+  width:100%;
+  padding:14px 18px;
+  border:1.5px solid rgba(0,0,0,0.1);
+  border-radius:12px;
+  font-size:15px;
+  font-family:'Inter',sans-serif;
+  background:#fafafa;
+  color:var(--text-dark);
+  margin-bottom:14px;
+  outline:none;
+  transition:border-color .2s;
+}
+.field:focus{border-color:var(--green-accent);background:#fff;}
+.field::placeholder{color:#b0b8b4;}
+
+.btn-login{
+  width:100%;
+  padding:16px;
+  background:var(--green-dark);
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-size:15px;font-weight:600;
+  cursor:pointer;
+  transition:background .25s, transform .15s;
+  margin-top:6px;
+  font-family:'Inter',sans-serif;
+}
+.btn-login:hover{background:var(--green-mid);transform:translateY(-1px);}
+
+#login-message{
+  font-size:14px;
+  font-weight:500;
+  margin-top:16px;
+  min-height:20px;
+  transition:all .3s;
+}
+
+.divider{border:none;border-top:1px solid rgba(0,0,0,0.07);margin:28px 0;}
+
+.login-hint{font-size:13px;color:var(--text-muted);line-height:1.6;}
+.login-hint code{background:#f0f4f0;padding:2px 8px;border-radius:6px;font-size:12px;}
+
+footer{
+  background:var(--green-dark);
+  color:#fff;
+  text-align:center;
+  padding:56px 40px;
+}
+footer .footer-logo{
+  font-family:'Playfair Display',serif;
+  font-size:28px;font-weight:700;
+  color:var(--green-light);
+  font-style:italic;
+  margin-bottom:16px;
+}
+footer p{font-size:14px;color:rgba(255,255,255,0.5);line-height:2;}
+
+.footer-avatars{
+  display:flex;gap:12px;justify-content:center;margin:24px 0;flex-wrap:wrap;
+}
+.avatar{
+  width:52px;height:52px;border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(149,213,178,0.4);
+}
+.avatar-placeholder{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--green-mid);
+  border:2px solid rgba(149,213,178,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--green-light);
+}
+
+.pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px;}
+.pill{
+  padding:8px 18px;border-radius:40px;
+  background:rgba(82,183,136,0.1);
+  color:var(--green-mid);
+  font-size:13px;font-weight:500;
+  border:1px solid rgba(82,183,136,0.2);
+}
+
+.timeline{display:flex;flex-direction:column;gap:0;}
+.t-item{
+  display:flex;gap:24px;padding:28px 0;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+.t-item:last-child{border-bottom:none;}
+.t-num{
+  flex-shrink:0;
+  width:40px;height:40px;border-radius:50%;
+  background:var(--green-accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;
+  margin-top:2px;
+}
+.t-body h4{font-size:16px;font-weight:600;color:var(--text-dark);margin-bottom:6px;}
+.t-body p{font-size:14px;color:var(--text-muted);line-height:1.7;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="slides-container" id="slider"></div>
+  <div class="header-content">
+    <div class="eyebrow">Environmental Action Platform</div>
+    <h1>Log<span>For</span>Earth</h1>
+    <p>Every login is a promise to the planet. We plant a tree each time you sign in.</p>
+    <div class="header-btns">
+      <button class="btn-primary" onclick="goTo('login')">Get Started</button>
+      <button class="btn-outline" onclick="goTo('about')">Learn More</button>
+    </div>
+  </div>
+  <div class="slide-dots" id="dots"></div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-logo">Log<span>For</span>Earth</div>
+  <div class="nav-links">
+    <a onclick="goTo('home')" id="nav-home" class="active">Home</a>
+    <a onclick="goTo('about')" id="nav-about">About</a>
+    <a onclick="goTo('impact')" id="nav-impact">Impact</a>
+    <a onclick="goTo('climate')" id="nav-climate">Climate</a>
+    <a onclick="goTo('forest')" id="nav-forest">Forest</a>
+    <a onclick="goTo('water')" id="nav-water">Water</a>
+    <a onclick="goTo('hydrologic')" id="nav-hydrologic">Hydrologic Cycle</a>
+    <a onclick="goTo('login')" id="nav-login">Login</a>
+  </div>
+</nav>
+
+<div id="home" class="page active">
+  <div class="section">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Our Mission</div>
+        <h2 class="section-title">One Login,<br>One Tree Planted</h2>
+        <p class="section-sub">We bridge digital action with real-world environmental impact. Every time you log in, a tree is planted in partnership with reforestation programs across Southeast Asia.</p>
+        <div class="pill-row">
+          <div class="pill">🌳 Trees Planted</div>
+          <div class="pill">🌍 Global Reach</div>
+          <div class="pill">♻️ Carbon Offset</div>
+        </div>
+        <button class="btn-primary" onclick="goTo('login')">Start Planting Today</button>
+      </div>
+      <div class="grid-3" style="grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="stat-card"><div class="stat-num">14k</div><div class="stat-label">Trees Planted</div></div>
+        <div class="stat-card"><div class="stat-num">3.2K</div><div class="stat-label">Active Users</div></div>
+        <div class="stat-card"><div class="stat-num">98%</div><div class="stat-label">Survival Rate</div></div>
+        <div class="stat-card"><div class="stat-num">12T</div><div class="stat-label">CO₂ Absorbed</div></div>
+      </div>
+    </div>
+
+    <div style="height:64px;"></div>
+
+    <div class="section-label">How It Works</div>
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-num">1</div>
+        <div class="t-body"><h4>Create an account</h4><p>Sign up on LogForEarth and join thousands of environmentally conscious users.</p></div>
+      </div>
+      <div class="t-item">
+        <div class="t-num">2</div>
+        <div class="t-body"><h4>Log in daily</h4><p>Each login triggers a tree planting event through our partner reforestation programs.</p></div>
+      </div>
+      <div class="t-item">
+        <div class="t-num">3</div>
+        <div class="t-body"><h4>Track your impact</h4><p>Watch your personal forest grow and see the real-world difference you're making.</p></div>
+      </div>
+      <div class="t-item">
+        <div class="t-num">4</div>
+        <div class="t-body"><h4>Spread the word</h4><p>Invite friends and multiply your environmental impact with every referral.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="about" class="page">
+  <div class="section">
+    <div class="section-label">Who We Are</div>
+    <h2 class="section-title">Built by Students, Backed by Purpose</h2>
+    <p class="section-sub">LogForEarth was created by a group of students passionate about combining technology with environmental stewardship.</p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Mission</h3>
+        <p>To make environmental action as simple as logging in — turning everyday digital behavior into measurable, real-world forest restoration.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔭</div>
+        <h3>Vision</h3>
+        <p>A future where technology and nature coexist symbiotically, and every digital citizen plays an active role in protecting Earth's ecosystems.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>Impact</h3>
+        <p>Raising global awareness while funding verified tree planting, clean water initiatives, and climate education programs worldwide.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="impact" class="page">
+  <div class="section">
+    <div class="section-label">Environmental Focus</div>
+    <h2 class="section-title">The Crises We're Tackling</h2>
+    <p class="section-sub">Our platform focuses on three interconnected environmental emergencies that demand immediate action.</p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🪓</div>
+        <h3>Deforestation</h3>
+        <p>15 billion trees are cut down every year. Forests are cleared for agriculture, urban expansion, and industrial use at an unsustainable rate.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💧</div>
+        <h3>Water Protection</h3>
+        <p>Only 3% of Earth's water is fresh, and much of it is inaccessible or polluted. Forests play a critical role in maintaining healthy watersheds.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌡️</div>
+        <h3>Climate Change</h3>
+        <p>Global temperatures have already risen 1.1°C above pre-industrial levels. Tree planting is one of the most effective natural carbon capture tools.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="climate" class="page">
+  <div class="section">
+    <div class="section-label">Atmospheric Science</div>
+    <h2 class="section-title">Acid Deposition & Global Warming</h2>
+    <p class="section-sub">Human industrial activity has fundamentally altered the chemistry of our atmosphere and oceans.</p>
+    <img class="section-img" src="p5.jpg" alt="Climate change illustration" onerror="this.style.background='linear-gradient(135deg,#2d6a4f,#1a3a1f)';this.alt=''">
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🌧️</div>
+        <h3>Acid Deposition</h3>
+        <p>When sulfur dioxide and nitrogen oxides from fossil fuel combustion mix with atmospheric moisture, they form sulfuric and nitric acids that fall as acid rain, damaging forests, aquatic ecosystems, and infrastructure.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌀</div>
+        <h3>Climate Change</h3>
+        <p>Long-term shifts in global temperatures and weather patterns, primarily driven by human activities such as burning fossil fuels, deforestation, and industrial agriculture, which release vast amounts of greenhouse gases.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <h3>Global Warming</h3>
+        <p>The trapping of solar heat by greenhouse gases — CO₂, methane, nitrous oxide — in the Earth's atmosphere, causing a steady rise in surface temperatures with cascading effects on ecosystems worldwide.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="forest" class="page">
+  <div class="section">
+    <div class="section-label">Forest Ecosystems</div>
+    <h2 class="section-title">The Lungs of Our Planet</h2>
+    <p class="section-sub">Forests cover 31% of Earth's land surface and harbor more than 80% of terrestrial biodiversity. Their health is our health.</p>
+    <img class="section-img" src="p6.jpg" alt="Forest" onerror="this.style.background='linear-gradient(135deg,#2d6a4f,#1a3a1f)';this.alt=''">
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🌿</div>
+        <h3>Importance</h3>
+        <p>Forests generate oxygen, regulate rainfall, prevent soil erosion, store carbon, and support millions of plant and animal species. They are irreplaceable climate regulators.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚠️</div>
+        <h3>Threats</h3>
+        <p>Illegal logging, slash-and-burn agriculture, urban sprawl, and mining operations destroy millions of hectares of forest annually, fragmenting habitats and releasing stored carbon.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>Solutions</h3>
+        <p>Community-led reforestation, sustainable forestry certification, indigenous land rights protections, and consumer awareness campaigns are proven pathways to forest recovery.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="water" class="page">
+  <div class="section">
+    <div class="section-label">Freshwater Systems</div>
+    <h2 class="section-title">Water Is Life — Protect It</h2>
+    <p class="section-sub">Clean, accessible water is a fundamental human right and ecological necessity. Forests and watersheds are inseparable.</p>
+    <img class="section-img" src="p7.jpg" alt="Water resources" onerror="this.style.background='linear-gradient(135deg,#1a5276,#1a3a1f)';this.alt=''">
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🌊</div>
+        <h3>Importance</h3>
+        <p>Water is essential for drinking, agriculture, sanitation, and energy production. Freshwater ecosystems support unique biodiversity found nowhere else on Earth.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏭</div>
+        <h3>Threats</h3>
+        <p>Industrial pollution, agricultural runoff, plastic waste, and climate-driven droughts are contaminating and depleting freshwater sources at alarming rates globally.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">♻️</div>
+        <h3>Solutions</h3>
+        <p>Watershed restoration, reduced chemical agriculture, wetland conservation, and community water management programs can safeguard this essential resource for future generations.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="hydrologic" class="page">
+  <div class="section">
+    <div class="section-label">Earth Science</div>
+    <h2 class="section-title">The Hydrologic Cycle</h2>
+    <p class="section-sub">Earth's water continuously moves through the environment in a closed loop, connecting oceans, atmosphere, land, and living organisms.</p>
+    <img class="section-img" src="p10.jpg" alt="Hydrologic cycle" onerror="this.style.background='linear-gradient(135deg,#1a5276,#2d6a4f)';this.alt=''">
+    <div class="grid-4">
+      <div class="card">
+        <div class="card-icon">☀️</div>
+        <h3>Evaporation</h3>
+        <p>Solar energy converts surface water from oceans, lakes, and rivers into water vapor, which rises into the atmosphere. Plants also contribute through transpiration.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">☁️</div>
+        <h3>Condensation</h3>
+        <p>As water vapor rises and cools at higher altitudes, it condenses around tiny atmospheric particles to form clouds and fog — visible aggregations of water droplets.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌧️</div>
+        <h3>Precipitation</h3>
+        <p>When clouds accumulate sufficient water mass, gravity pulls it back to Earth's surface as rain, snow, sleet, or hail, depending on temperature and atmospheric conditions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌊</div>
+        <h3>Collection</h3>
+        <p>Precipitation gathers in oceans, rivers, lakes, and underground aquifers. Some infiltrates deep into groundwater systems, while runoff carves river channels and feeds wetlands.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="login" class="page">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div style="font-size:36px;margin-bottom:16px;">🌱</div>
+      <h2>Welcome Back</h2>
+      <p class="sub">Login to plant your tree today</p>
+      <input type="text" id="username" class="field" placeholder="Username">
+      <input type="password" id="password" class="field" placeholder="Password">
+      <button class="btn-login" onclick="checkLogin()">Login & Plant a Tree</button>
+      <p id="login-message"></p>
+      <div class="divider"></div>
+      <div class="login-hint">
+        Demo accounts: <code>user1 / password1</code> &nbsp;·&nbsp; <code>admin / admin123</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+ <div class="footer-avatars">
+  <img src="p1.jpg" class="avatar" alt="Hanz">
+  <img src="p2.jpg" class="avatar" alt="JP">
+  <img src="p3.jpg" class="avatar" alt="Kyle">
+  <img src="p4.jpg" class="avatar" alt="Bubot">
+  <img src="p8.jpg" class="avatar" alt="Leoven">
+</div>
+  <p>Hanz &nbsp;·&nbsp; JP &nbsp;·&nbsp; Kyle &nbsp;·&nbsp; Bubot &nbsp;·&nbsp; Leoven</p>
+  <p style="margin-top:8px;">© 2026 LogForEarth &nbsp;·&nbsp; Making the Earth Greener &nbsp;·&nbsp; Group 4</p>
+</footer>
+
+<script>
+const validUsers = {"user1":"password1","user2":"password2","admin":"admin123"};
+
+const imageList = ["forest.jpg","p11.jpg","p12.jpg","p13.jpg","p14.jpg"];
+let currentSlide = 0;
+let sliderInterval;
+
+function buildSlider(){
+  const container = document.getElementById('slider');
+  const dotsEl = document.getElementById('dots');
+  imageList.forEach((src,i)=>{
+    const s = document.createElement('div');
+    s.className = 'slide' + (i===0?' active':'');
+    s.style.backgroundImage = `url('${src}')`;
+    container.appendChild(s);
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.onclick = ()=>goSlide(i);
+    dotsEl.appendChild(d);
+  });
+  const overlay = document.createElement('div');
+  overlay.className = 'slide-overlay';
+  container.appendChild(overlay);
+}
+
+function goSlide(n){
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = (n + imageList.length) % imageList.length;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+function nextSlide(){goSlide(currentSlide+1);}
+
+function startSlider(){
+  buildSlider();
+  sliderInterval = setInterval(nextSlide,4000);
+}
+
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+page);
+  if(navEl) navEl.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function checkLogin(){
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  const msg = document.getElementById('login-message');
+  if(validUsers[u] && validUsers[u]===p){
+    msg.style.color='#2d6a4f';
+    msg.textContent='🌱 Welcome, '+u+'! Your tree has been planted.';
+    setTimeout(()=>goTo('home'),1800);
+  } else {
+    msg.style.color='#c0392b';
+    msg.textContent='Incorrect username or password. Try again.';
+  }
+}
+
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')checkLogin();});
+
+startSlider();
+</script>
+</body>
+</html>
